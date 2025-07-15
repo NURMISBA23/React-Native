@@ -12,7 +12,7 @@ import {
 // --- Konfigurasi Sumber Daya Gambar ---
 // Array ini menyimpan sumber gambar utama dan alternatif.
 // Setiap objek merepresentasikan satu sel di dalam kisi.
-const koleksiSumberGambar = [
+const daftarGamba = [
   { utama: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQyNRZg2KXTlVxT88X67ig-28tXxCL0PoON4w&s', alternatif: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS89tk8EYmK2Ywyp9-bP8MU1WHuBZO9WBMMgTJFxYtNjiYEBkvAadgxCREN5iuA6mCRDOw&usqp=CAU' },
   { utama: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTJf7LGe2EupZm5FVDQwcUlv39VCZe5QdAyKg&s', alternatif: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSogQn7rfXiEpepGb_RGu79N62fBujxAQKBMA&s' },
   { utama: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTsSz6ZUat1hXr9YZqxuz979oeP8SyT_vqd2g&s', alternatif: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSeX2oXdPA5BvoWSxndJ6JKKNdL5lVHgaraZLD9SkOKf9c5do7YQIvvprncTHWSfyt1hjA&usqp=CAU' },
@@ -26,94 +26,60 @@ const koleksiSumberGambar = [
 
 // --- Fungsi Bantuan ---
 // Menginisialisasi status untuk setiap sel gambar.
-const aturKondisiAwalKisi = () => koleksiSumberGambar.map(dataSumber => ({
-  ...dataSumber,
-  urlTampil: dataSumber.utama,
-  skalaTransformasi: 1.0,
-  sedangBermasalah: false,
-}));
+const awalKondisiGamba = () =>
+  daftarGamba.map(item => ({
+    ...item,
+    urlAktif: item.utama,
+    skala: 1.0,
+    error: false,
+  }));
 
-/**
- * Komponen LayarKisiGambar
- * Menampilkan kisi gambar interaktif berukuran 3x3.
- */
-export default function LayarKisiGambar() {
-  // State untuk mengelola properti dari setiap item dalam kisi.
-  const [itemKisi, setItemKisi] = useState(aturKondisiAwalKisi);
+export default function LayarKisiGamba() {
+  const [gambaKisi, setGambaKisi] = useState(awalKondisiGamba);
 
-  // --- Penanganan Aksi ---
-
-  /**
-   * Mengelola aksi ketika sebuah sel gambar ditekan.
-   * Fungsi ini menukar sumber gambar dan memperbesar skalanya.
-   * Dibungkus dengan useCallback untuk optimisasi performa.
-   */
-  const kelolaAksiTekanSel = useCallback((indeksTerpilih) => {
-    setItemKisi(itemSaatIni =>
-      itemSaatIni.map((item, indeks) => {
-        if (indeks === indeksTerpilih) {
-          // Tentukan URL gambar berikutnya yang akan ditampilkan.
-          const urlTampilBerikutnya = item.urlTampil === item.utama
-            ? item.alternatif
-            : item.utama;
-          
-          // Hitung skala baru, dengan batas maksimal 2.
-          const skalaBerikutnya = item.skalaTransformasi < 2.0
-            ? item.skalaTransformasi * 1.2
-            : 2.0;
-
-          return {
-            ...item,
-            urlTampil: urlTampilBerikutnya,
-            skalaTransformasi: skalaBerikutnya,
-          };
-        }
-        // Kembalikan item lain tanpa modifikasi.
-        return item;
-      })
-    );
-  }, []); // Dependensi kosong berarti fungsi ini hanya dibuat sekali.
-
-  /**
-   * Mengelola error pemuatan gambar untuk sel tertentu.
-   * Dibungkus dengan useCallback untuk optimisasi performa.
-   */
-  const tanganiMasalahGambar = useCallback((indeksError) => {
-    setItemKisi(itemSaatIni =>
-      itemSaatIni.map((item, indeks) => {
-        if (indeks === indeksError) {
-          return { ...item, sedangBermasalah: true };
+  const tekanGamba = useCallback((indeks) => {
+    setGambaKisi(sekarang =>
+      sekarang.map((item, idx) => {
+        if (idx === indeks) {
+          const urlBaru = item.urlAktif === item.utama ? item.alternatif : item.utama;
+          const skalaBaru = item.skala < 2.0 ? item.skala * 1.2 : 2.0;
+          return { ...item, urlAktif: urlBaru, skala: skalaBaru };
         }
         return item;
       })
     );
   }, []);
 
-  // --- Tampilan Komponen ---
+  const tanganiGagal = useCallback((indeks) => {
+    setGambaKisi(sekarang =>
+      sekarang.map((item, idx) => (idx === indeks ? { ...item, error: true } : item))
+    );
+  }, []);
+
   return (
     <SafeAreaView style={gaya.wadahLayar}>
-      <Text style={gaya.judulHalaman}>Galeri Gambar 3x3</Text>
+      <Text style={gaya.judul}>Galeri Gamba 3x3</Text>
       <View style={gaya.wadahKisi}>
-        {itemKisi.map((item, indeks) => (
+        {gambaKisi.map((item, indeks) => (
           <TouchableOpacity
             key={indeks}
-            style={gaya.selGambar}
-            onPress={() => kelolaAksiTekanSel(indeks)}
+            style={gaya.kotakGamba}
+            onPress={() => tekanGamba(indeks)}
             activeOpacity={0.8}
           >
-            {item.sedangBermasalah ? (
-              <View style={gaya.wadahPesanError}>
-                <Text style={gaya.teksPesanError}>X</Text>
+            {item.error ? (
+              <View style={gaya.wadahError}>
+                <Text style={gaya.teksError}>Gagal</Text>
               </View>
             ) : (
               <Image
-                source={{ uri: item.urlTampil }}
+                source={{ uri: item.urlAktif }}
                 style={[
-                  gaya.elemenGambar,
-                  { transform: [{ scale: item.skalaTransformasi }] }
+                  gaya.gamba,
+                  { transform: [{ scale: item.skala }] }
                 ]}
                 resizeMode="cover"
-                onError={() => tanganiMasalahGambar(indeks)}
+                onError={() => tanganiGagal(indeks)}
               />
             )}
           </TouchableOpacity>
@@ -123,57 +89,56 @@ export default function LayarKisiGambar() {
   );
 }
 
-// --- Definisi Gaya ---
+const ukuranSel = 110;
 const gaya = StyleSheet.create({
   wadahLayar: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#fafafa',
   },
-  judulHalaman: {
+  judul: {
     fontSize: 26,
     fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 24,
+    color: '#2c3e50',
+    marginBottom: 20,
     fontFamily: 'sans-serif-condensed',
   },
   wadahKisi: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'center',
-    width: Dimensions.get('window').width > 380 ? 372 : '95%',
+    width: Dimensions.get('window').width > 360 ? 3 * (ukuranSel + 6) : '95%',
   },
-  selGambar: {
-    width: 120,
-    height: 120,
-    margin: 2,
-    backgroundColor: '#e0e0e0',
+  kotakGamba: {
+    width: ukuranSel,
+    height: ukuranSel,
+    margin: 3,
+    backgroundColor: '#dcdcdc',
     justifyContent: 'center',
     alignItems: 'center',
-    borderRadius: 8,
+    borderRadius: 10,
     overflow: 'hidden',
-    elevation: 3,
+    elevation: 2,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.2,
+    shadowRadius: 2,
   },
-  elemenGambar: {
+  gamba: {
     width: '100%',
     height: '100%',
   },
-  wadahPesanError: {
+  wadahError: {
     width: '100%',
     height: '100%',
+    backgroundColor: '#c0392b',
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#c62828',
   },
-  teksPesanError: {
+  teksError: {
     color: 'white',
-    fontSize: 40,
     fontWeight: 'bold',
+    fontSize: 20,
   },
 });
-
