@@ -2,20 +2,16 @@ import React, { useState } from 'react';
 import { Dimensions, Image, SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 // --- Konfigurasi Awal ---
-// Ceritanya ini data dari server nah, kukasih statis saja dulu.
-// Langsung pakai URL lengkapnya di sini, tidak perlu digabung-gabung lagi.
-const URL_GAMBAR_UTAMA = 'https://i.pinimg.com/736x/8a/ea/22/8aea2261be9889f7a937a0d2810d5591.jpg';
-const URL_GAMBAR_CADANGAN = 'https://i.pinimg.com/736x/8a/ea/22/8aea2261be9889f7a937a0d2810d5591.jpg';
-
-// Kita buat datanya secara dinamis, supaya keren sedikit.
-// Logikanya diubah biar langsung pakai URL yang benar.
+// Datanya diubah untuk menampilkan gambar yang Anda minta.
 const DATA_GAMBARA = Array.from({ length: 9 }, (_, index) => ({
   pananda: index + 1,
-  orisinil: URL_GAMBAR_UTAMA,
-  cadanganna: URL_GAMBAR_CADANGAN,
+  // Gambar orisinil/utama menggunakan link baru.
+  orisinil: `https://i.pinimg.com/736x/8a/ea/22/8aea2261be9889f7a937a0d2810d5591.jpg`,
+  // Gambar cadangan/alternatif diperbarui sesuai permintaan Anda.
+  cadanganna: `https://i.pinimg.com/736x/0b/59/a9/0b59a9a5405a5fd301e4fd0beb0649e5.jpg`,
 }));
 
-// Ini untuk tipe data, biar rapi ji kodenya bosku.
+// Tipe data untuk memastikan struktur data kita konsisten.
 type InfoGambara = {
   pananda: number;
   orisinil: string;
@@ -23,37 +19,59 @@ type InfoGambara = {
 };
 
 /**
- * Komponen untuk satu gambar yang bisa dipencet-pencet.
- * Kalau dipencet, gambarnya ganti dan membesar sedikit.
+ * Komponen untuk satu gambar interaktif.
+ * Sekarang dengan logika skala yang benar dan penanganan error yang lebih baik.
  */
 const GambaraInteraktif = ({ sumberra }: { sumberra: InfoGambara }) => {
-  // State untuk tahu gambar mana yang dipakai, asli atau cadangan.
   const [pakeCadanganna, setPakeCadanganna] = useState(false);
-  // State untuk skala pembesaran gambar.
+  // State skala sekarang akan meningkat setiap kali gambar dipencet.
   const [skala, setSkala] = useState(1);
-  // State kalau gagal ki memuat gambara'.
   const [gagalKiMemuat, setGagalKiMemuat] = useState(false);
+  const [gambarUtamaGagal, setGambarUtamaGagal] = useState(false);
+  const [gambarCadanganGagal, setGambarCadanganGagal] = useState(false);
 
   // Fungsi ini jalan kalau gambara' dipencet.
   const pasDipencet = () => {
-    if (gagalKiMemuat) return; // Kalau sudah gagal, tidak usah mi diapa-apai.
-    setPakeCadanganna(sebelumnya => !sebelumnya);
-    setSkala(1.1); // Langsung set ke 1.1 pas dipencet
-    setTimeout(() => setSkala(1), 200); // Kembalikan ke normal setelah 0.2 detik
+    // Ganti antara gambar orisinil dan cadangan.
+    const targetPakeCadangan = !pakeCadanganna;
+
+    // Cek apakah gambar yang akan ditampilkan sudah gagal dimuat.
+    if (targetPakeCadangan && gambarCadanganGagal) return;
+    if (!targetPakeCadangan && gambarUtamaGagal) return;
+
+    setPakeCadanganna(targetPakeCadangan);
+
+    // Logika skala baru:
+    // Meningkat 20% setiap kali dipencet, dengan batas maksimal 2x (2.0).
+    setSkala(skalaSebelumnya => Math.min(skalaSebelumnya * 1.2, 2));
   };
 
+  // Memilih URL gambar yang akan ditampilkan.
   const gambaraDipake = pakeCadanganna ? sumberra.cadanganna : sumberra.orisinil;
+  const sedangMemuatGambarUtama = !pakeCadanganna;
+
+  const handleGagalMuat = () => {
+      if(sedangMemuatGambarUtama) {
+          setGambarUtamaGagal(true);
+      } else {
+          setGambarCadanganGagal(true);
+      }
+  }
+
+  const tampilkanError = (sedangMemuatGambarUtama && gambarUtamaGagal) || (!sedangMemuatGambarUtama && gambarCadanganGagal);
 
   return (
     <TouchableOpacity onPress={pasDipencet} style={modelna.wadahGambara}>
-      {gagalKiMemuat ? (
+      {tampilkanError ? (
+        // Tampilan error jika gambar gagal dimuat.
         <View style={modelna.tampilanKasala}>
           <Text style={modelna.tulisangKasala}>Gagal ji</Text>
         </View>
       ) : (
         <Image
           source={{ uri: gambaraDipake }}
-          onError={() => setGagalKiMemuat(true)}
+          // Set state gagal jika ada error saat memuat URL gambar.
+          onError={handleGagalMuat}
           style={[modelna.gambara, { transform: [{ scale: skala }] }]}
         />
       )}
@@ -62,12 +80,14 @@ const GambaraInteraktif = ({ sumberra }: { sumberra: InfoGambara }) => {
 };
 
 // --- Komponen Utama Aplikasi ---
-// Ini mi komponen utamanya, yang menampilkan semua gambar dalam grid.
+// Komponen utama yang menyusun semua gambar dalam grid.
 export default function AplikasiGambara() {
   const lebaraLayar = Dimensions.get('window').width;
-  const ukuranKotaka = lebaraLayar / 3; // Ukuran pas untuk 3 kolom
+  // Ukuran setiap sel dihitung berdasarkan lebar layar dibagi 3.
+  // Ini memastikan "Setiap sel gambar harus memiliki ukuran yang sama".
+  const ukuranKotaka = lebaraLayar / 3;
 
-  // Fungsi untuk membagi array jadi beberapa bagian (untuk baris)
+  // Fungsi untuk membagi array jadi beberapa bagian (untuk setiap baris).
   const potongArrayJadiBagian = (arr: InfoGambara[], ukuranBagian: number): InfoGambara[][] => {
     const hasilPotongan = [];
     for (let i = 0; i < arr.length; i += ukuranBagian) {
@@ -81,12 +101,10 @@ export default function AplikasiGambara() {
   return (
     <SafeAreaView style={modelna.latara}>
       <ScrollView contentContainerStyle={modelna.kontainera}>
-        {/* Di sini kita mapping data yang sudah dibagi per baris.
-          Jadi lebih dinamis, tidak manual 3 baris seperti kode lama.
-        */}
         {dataPerBaris.map((baris, index) => (
           <View key={`baris-${index}`} style={modelna.baris}>
             {baris.map(item => (
+              // Setiap sel pembungkus diatur dengan width dan height yang sama.
               <View key={item.pananda} style={[modelna.pembungkusKotaka, { width: ukuranKotaka, height: ukuranKotaka }]}>
                 <GambaraInteraktif sumberra={item} />
               </View>
@@ -99,28 +117,27 @@ export default function AplikasiGambara() {
 }
 
 // --- Kumpulan Model (Styling) ---
-// Semua gaya CSS-nya kukumpul di sini, biar tidak berantakan.
 const modelna = StyleSheet.create({
   latara: {
-    backgroundColor: '#f0f0f0', // Ganti warna latar sedikit
+    backgroundColor: '#f0f0f0',
     flex: 1,
   },
   kontainera: {
-    paddingVertical: 5,
+    // Kontainer utama untuk scroll view
   },
   baris: {
     flexDirection: 'row',
   },
   pembungkusKotaka: {
-    padding: 4, // Kasih padding di pembungkusnya
+    padding: 4, // Memberi sedikit jarak antar gambar
   },
   wadahGambara: {
     flex: 1,
-    borderRadius: 12, // Bikin lebih bulat sudutnya
+    borderRadius: 12,
     overflow: 'hidden',
     backgroundColor: '#e0e0e0',
-    elevation: 3, // Tambah bayangan untuk Android
-    shadowColor: '#000', // Bayangan untuk iOS
+    elevation: 3,
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
@@ -128,7 +145,6 @@ const modelna = StyleSheet.create({
   gambara: {
     width: '100%',
     height: '100%',
-    // transition properti tidak ada di React Native, jadi saya hapus
   },
   tampilanKasala: {
     alignItems: 'center',
