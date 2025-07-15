@@ -6,9 +6,9 @@ import { Dimensions, Image, SafeAreaView, ScrollView, StyleSheet, Text, Touchabl
 const DATA_GAMBARA = Array.from({ length: 9 }, (_, index) => ({
   pananda: index + 1,
   // Gambar orisinil/utama menggunakan link baru.
-  orisinil: `https://i.pinimg.com/736x/8a/ea/22/8aea2261be9889f7a937a0d2810d5591.jpg`,
+  orisinil: `https://ik.imagekit.io/vrqlaqgil/331d50c0493af05f3a9eab1122226788.jpg?updatedAt=1752587838189`,
   // Gambar cadangan/alternatif diperbarui sesuai permintaan Anda.
-  cadanganna: `https://i.pinimg.com/736x/0b/59/a9/0b59a9a5405a5fd301e4fd0beb0649e5.jpg`,
+  cadanganna: `https://ik.imagekit.io/vrqlaqgil/0b59a9a5405a5fd301e4fd0beb0649e5%20(1).jpg?updatedAt=1752587838194`,
 }));
 
 // Tipe data untuk memastikan struktur data kita konsisten.
@@ -26,7 +26,6 @@ const GambaraInteraktif = ({ sumberra }: { sumberra: InfoGambara }) => {
   const [pakeCadanganna, setPakeCadanganna] = useState(false);
   // State skala sekarang akan meningkat setiap kali gambar dipencet.
   const [skala, setSkala] = useState(1);
-  const [gagalKiMemuat, setGagalKiMemuat] = useState(false);
   const [gambarUtamaGagal, setGambarUtamaGagal] = useState(false);
   const [gambarCadanganGagal, setGambarCadanganGagal] = useState(false);
 
