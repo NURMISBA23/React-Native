@@ -1,5 +1,3 @@
-
-// ----------------------------------TUGAS 2----------------------------------------
 import React, { useCallback, useState } from 'react';
 import {
   Dimensions,
@@ -178,4 +176,4 @@ const gaya = StyleSheet.create({
     fontWeight: 'bold',
   },
 });
-// ----------------------------------BATAS TUGAS 2----------------------------------------
+
