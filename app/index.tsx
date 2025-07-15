@@ -7,10 +7,10 @@ export default function Index() {
       <Text style={styles.title}>Halaman Utama</Text>
       <Text style={styles.subtitle}>Klik tombol di bawah untuk melihat tugas.</Text>
       
-      {/* Tombol untuk navigasi ke halaman tugas1 */}
+{/*       {/* Tombol untuk navigasi ke halaman tugas1 */}
       <Link href="/tugas1" style={styles.linkButton}>
         <Text style={styles.linkText}>Buka Tugas 1</Text>
-      </Link>
+      </Link> */}
       
       {/* 🔗 TAMBAHKAN TOMBOL INI untuk navigasi ke halaman tugas2 */}
       <Link href="/tugas2" style={[styles.linkButton, { marginTop: 15 }]}>
