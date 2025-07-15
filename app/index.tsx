@@ -122,8 +122,6 @@ const gaya = StyleSheet.create({
     fontWeight: 'bold',
   },
 });
-
-
 // BATAS TUGAS 1---------------------------------------------------------------------------------
 
 // TUGAS 2
