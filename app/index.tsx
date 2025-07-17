@@ -1,14 +1,13 @@
 import React from 'react';
 import {
   View,
-  Image,
+  Animated,
   TouchableOpacity,
   SafeAreaView,
   ScrollView,
   Dimensions,
   StyleSheet,
   Text,
-  Animated,
 } from 'react-native';
 
 const SENARAI_WIMBA_PRATAMA = [
@@ -41,6 +40,9 @@ const KOLEKSI_WIMBA = SENARAI_WIMBA_PRATAMA.map((pratama, indeks) => ({
   dwitiya: SENARAI_WIMBA_DWITIYA[indeks],
 }));
 
+// Gambar fallback dari ImageKit (adaptive icon)
+const URL_GAGAL_MUAT = 'https://ik.imagekit.io/vrqlaqgil/BTS/ARMY%20(1).png';
+
 const KomponenWimbaTunggal = ({ butirWimba, ukuran }) => {
   const [pakaiDwitiya, aturPakaiDwitiya] = React.useState(false);
   const [gagalMuat, aturGagalMuat] = React.useState(false);
@@ -56,11 +58,11 @@ const KomponenWimbaTunggal = ({ butirWimba, ukuran }) => {
   };
 
   const sumberGambar = gagalMuat
-    ? { uri: 'https://placehold.co/400x400?text=Gagal+Muat' }
+    ? { uri: URL_GAGAL_MUAT }
     : { uri: pakaiDwitiya ? butirWimba.dwitiya : butirWimba.pratama };
 
   return (
-    <TouchableOpacity onPress={kelolaSentuhan} style={{ width: ukuran, height: ukuran }}>
+    <TouchableOpacity onPress={kelolaSentuhan} activeOpacity={0.8} style={{ width: ukuran, height: ukuran }}>
       <Animated.Image
         source={sumberGambar}
         style={{
@@ -68,6 +70,7 @@ const KomponenWimbaTunggal = ({ butirWimba, ukuran }) => {
           height: '100%',
           borderRadius: 10,
           transform: [{ scale: skala }],
+          backgroundColor: '#333',
         }}
         resizeMode="cover"
         onError={() => aturGagalMuat(true)}
@@ -105,7 +108,7 @@ export default function RakitLayarUtama() {
       <ScrollView contentContainerStyle={gaya.areaGulir}>
         <View style={gaya.penataanKisi}>
           {KOLEKSI_WIMBA.map((butir) => (
-            <View key={butir.pengenal} style={gaya.wadahButirKisi}>
+            <View key={butir.pengenal} style={[gaya.wadahButirKisi, { width: ukuranSel, height: ukuranSel }]}>
               <KomponenWimbaTunggal butirWimba={butir} ukuran={ukuranSel} />
             </View>
           ))}
