@@ -8,6 +8,7 @@ import {
   Dimensions,
   StyleSheet,
   Text,
+  Animated,
 } from 'react-native';
 
 const SENARAI_WIMBA_PRATAMA = [
@@ -43,10 +44,15 @@ const KOLEKSI_WIMBA = SENARAI_WIMBA_PRATAMA.map((pratama, indeks) => ({
 const KomponenWimbaTunggal = ({ butirWimba, ukuran }) => {
   const [pakaiDwitiya, aturPakaiDwitiya] = React.useState(false);
   const [gagalMuat, aturGagalMuat] = React.useState(false);
+  const [skala, aturSkala] = React.useState(1);
 
   const kelolaSentuhan = () => {
-    aturPakaiDwitiya(!pakaiDwitiya);
-    aturGagalMuat(false); // reset jika sebelumnya error
+    aturPakaiDwitiya((nilai) => !nilai);
+    aturSkala((skalaLama) => {
+      const skalaBaru = skalaLama * 1.2;
+      return skalaBaru <= 2 ? skalaBaru : 2;
+    });
+    aturGagalMuat(false); // reset error jika sebelumnya gagal
   };
 
   const sumberGambar = gagalMuat
@@ -55,9 +61,14 @@ const KomponenWimbaTunggal = ({ butirWimba, ukuran }) => {
 
   return (
     <TouchableOpacity onPress={kelolaSentuhan} style={{ width: ukuran, height: ukuran }}>
-      <Image
+      <Animated.Image
         source={sumberGambar}
-        style={{ width: '100%', height: '100%', borderRadius: 10 }}
+        style={{
+          width: '100%',
+          height: '100%',
+          borderRadius: 10,
+          transform: [{ scale: skala }],
+        }}
         resizeMode="cover"
         onError={() => aturGagalMuat(true)}
       />
@@ -89,7 +100,7 @@ export default function RakitLayarUtama() {
     <SafeAreaView style={gaya.wadahUlu}>
       <View style={gaya.areaJudul}>
         <Text style={gaya.teksJudul}>Galeri Wimba Interaktif</Text>
-        <Text style={gaya.teksSubJudul}>Sentuh gambar untuk melihat versi lainnya</Text>
+        <Text style={gaya.teksSubJudul}>Sentuh gambar untuk memperbesar & lihat versi lain</Text>
       </View>
       <ScrollView contentContainerStyle={gaya.areaGulir}>
         <View style={gaya.penataanKisi}>
