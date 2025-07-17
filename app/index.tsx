@@ -40,29 +40,24 @@ const KOLEKSI_WIMBA = SENARAI_WIMBA_PRATAMA.map((pratama, indeks) => ({
   dwitiya: SENARAI_WIMBA_DWITIYA[indeks],
 }));
 
-const KomponenWimbaTunggal = ({ butirWimba }) => {
+const KomponenWimbaTunggal = ({ butirWimba, ukuran }) => {
   const [pakaiDwitiya, aturPakaiDwitiya] = React.useState(false);
-  const [faktorSkala, aturFaktorSkala] = React.useState(1);
   const [gagalMuat, aturGagalMuat] = React.useState(false);
 
   const kelolaSentuhan = () => {
     aturPakaiDwitiya(!pakaiDwitiya);
-    aturFaktorSkala((skalaSebelumnya) => {
-      const skalaBerikutnya = skalaSebelumnya * 1.2;
-      return skalaBerikutnya <= 2 ? skalaBerikutnya : 2;
-    });
     aturGagalMuat(false); // reset jika sebelumnya error
   };
 
   const sumberGambar = gagalMuat
-    ? { uri: 'https://placehold.co/400x400/dc2626/ffffff?text=Gagal+Muat' }
+    ? { uri: 'https://placehold.co/400x400?text=Gagal+Muat' }
     : { uri: pakaiDwitiya ? butirWimba.dwitiya : butirWimba.pratama };
 
   return (
-    <TouchableOpacity onPress={kelolaSentuhan} style={gaya.pembungkusWimba}>
+    <TouchableOpacity onPress={kelolaSentuhan} style={{ width: ukuran, height: ukuran }}>
       <Image
         source={sumberGambar}
-        style={[gaya.wimba, { transform: [{ scale: faktorSkala }] }]}
+        style={{ width: '100%', height: '100%', borderRadius: 10 }}
         resizeMode="cover"
         onError={() => aturGagalMuat(true)}
       />
@@ -79,7 +74,6 @@ export default function RakitLayarUtama() {
     };
 
     const subscription = Dimensions.addEventListener('change', kelolaPerubahanDimensi);
-
     return () => {
       subscription?.remove();
     };
@@ -88,9 +82,8 @@ export default function RakitLayarUtama() {
   const lebarMaksimalKisi = 960;
   const jumlahKolom = 3;
   const marginButir = 6 * 2;
-
   const lebarKisiEfektif = Math.min(lebarLayar, lebarMaksimalKisi);
-  const besaranButir = lebarKisiEfektif / jumlahKolom - marginButir;
+  const ukuranSel = lebarKisiEfektif / jumlahKolom - marginButir;
 
   return (
     <SafeAreaView style={gaya.wadahUlu}>
@@ -101,8 +94,8 @@ export default function RakitLayarUtama() {
       <ScrollView contentContainerStyle={gaya.areaGulir}>
         <View style={gaya.penataanKisi}>
           {KOLEKSI_WIMBA.map((butir) => (
-            <View key={butir.pengenal} style={[gaya.wadahButirKisi, { width: besaranButir, height: besaranButir }]}>
-              <KomponenWimbaTunggal butirWimba={butir} />
+            <View key={butir.pengenal} style={gaya.wadahButirKisi}>
+              <KomponenWimbaTunggal butirWimba={butir} ukuran={ukuranSel} />
             </View>
           ))}
         </View>
@@ -153,13 +146,5 @@ const gaya = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.8,
     shadowRadius: 2,
-  },
-  pembungkusWimba: {
-    flex: 1,
-  },
-  wimba: {
-    width: '100%',
-    height: '100%',
-    borderRadius: 10,
   },
 });
