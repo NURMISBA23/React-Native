@@ -1,16 +1,15 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
-  Animated,
+  Image,
   TouchableOpacity,
   SafeAreaView,
   ScrollView,
   Dimensions,
   StyleSheet,
-  Text,
 } from 'react-native';
 
-const SENARAI_WIMBA_PRATAMA = [
+const MAIN_IMAGES = [
   'https://ik.imagekit.io/vrqlaqgil/BTS/RM%20(1).png',
   'https://ik.imagekit.io/vrqlaqgil/BTS/ARMY%20(2).png',
   'https://ik.imagekit.io/vrqlaqgil/BTS/Jin%20(1).png',
@@ -22,7 +21,7 @@ const SENARAI_WIMBA_PRATAMA = [
   'https://ik.imagekit.io/vrqlaqgil/BTS/JK%20(1).png',
 ];
 
-const SENARAI_WIMBA_DWITIYA = [
+const ALT_IMAGES = [
   'https://ik.imagekit.io/vrqlaqgil/BTS/RM%20(3).png',
   'https://ik.imagekit.io/vrqlaqgil/BTS/ARMY%20(1).png',
   'https://ik.imagekit.io/vrqlaqgil/BTS/Jin%20(2).png',
@@ -34,82 +33,46 @@ const SENARAI_WIMBA_DWITIYA = [
   'https://ik.imagekit.io/vrqlaqgil/BTS/JK%20(2).png',
 ];
 
-const KOLEKSI_WIMBA = SENARAI_WIMBA_PRATAMA.map((pratama, indeks) => ({
-  pengenal: indeks,
-  pratama: pratama,
-  dwitiya: SENARAI_WIMBA_DWITIYA[indeks],
+const IMAGE_LIST = MAIN_IMAGES.map((main, index) => ({
+  id: index,
+  main,
+  alt: ALT_IMAGES[index],
 }));
 
-// Gambar fallback dari ImageKit (adaptive icon)
-const URL_GAGAL_MUAT = 'https://ik.imagekit.io/vrqlaqgil/BTS/ARMY%20(1).png';
+const GridImage = ({ item }) => {
+  const [useAlt, setUseAlt] = useState(false);
+  const [scale, setScale] = useState(1);
 
-const KomponenWimbaTunggal = ({ butirWimba, ukuran }) => {
-  const [pakaiDwitiya, aturPakaiDwitiya] = React.useState(false);
-  const [gagalMuat, aturGagalMuat] = React.useState(false);
-  const [skala, aturSkala] = React.useState(1);
-
-  const kelolaSentuhan = () => {
-    aturPakaiDwitiya((nilai) => !nilai);
-    aturSkala((skalaLama) => {
-      const skalaBaru = skalaLama * 1.2;
-      return skalaBaru <= 2 ? skalaBaru : 2;
+  const handlePress = () => {
+    setUseAlt(!useAlt);
+    setScale((prev) => {
+      const next = prev * 1.2;
+      return next <= 2 ? next : 2;
     });
-    aturGagalMuat(false); // reset error jika sebelumnya gagal
   };
 
-  const sumberGambar = gagalMuat
-    ? { uri: URL_GAGAL_MUAT }
-    : { uri: pakaiDwitiya ? butirWimba.dwitiya : butirWimba.pratama };
-
   return (
-    <TouchableOpacity onPress={kelolaSentuhan} activeOpacity={0.8} style={{ width: ukuran, height: ukuran }}>
-      <Animated.Image
-        source={sumberGambar}
-        style={{
-          width: '100%',
-          height: '100%',
-          borderRadius: 10,
-          transform: [{ scale: skala }],
-          backgroundColor: '#333',
-        }}
+    <TouchableOpacity onPress={handlePress} style={styles.imageWrapper}>
+      <Image
+        source={{ uri: useAlt ? item.alt : item.main }}
+        style={[styles.image, { transform: [{ scale }] }]}
         resizeMode="cover"
-        onError={() => aturGagalMuat(true)}
       />
     </TouchableOpacity>
   );
 };
 
-export default function RakitLayarUtama() {
-  const [lebarLayar, aturLebarLayar] = React.useState(Dimensions.get('window').width);
-
-  React.useEffect(() => {
-    const kelolaPerubahanDimensi = () => {
-      aturLebarLayar(Dimensions.get('window').width);
-    };
-
-    const subscription = Dimensions.addEventListener('change', kelolaPerubahanDimensi);
-    return () => {
-      subscription?.remove();
-    };
-  }, []);
-
-  const lebarMaksimalKisi = 960;
-  const jumlahKolom = 3;
-  const marginButir = 6 * 2;
-  const lebarKisiEfektif = Math.min(lebarLayar, lebarMaksimalKisi);
-  const ukuranSel = lebarKisiEfektif / jumlahKolom - marginButir;
+export default function App() {
+  const screenWidth = Dimensions.get('window').width;
+  const itemSize = screenWidth / 3 - 12;
 
   return (
-    <SafeAreaView style={gaya.wadahUlu}>
-      <View style={gaya.areaJudul}>
-        <Text style={gaya.teksJudul}>Galeri Wimba Interaktif</Text>
-        <Text style={gaya.teksSubJudul}>Sentuh gambar untuk memperbesar & lihat versi lain</Text>
-      </View>
-      <ScrollView contentContainerStyle={gaya.areaGulir}>
-        <View style={gaya.penataanKisi}>
-          {KOLEKSI_WIMBA.map((butir) => (
-            <View key={butir.pengenal} style={[gaya.wadahButirKisi, { width: ukuranSel, height: ukuranSel }]}>
-              <KomponenWimbaTunggal butirWimba={butir} ukuran={ukuranSel} />
+    <SafeAreaView style={styles.container}>
+      <ScrollView contentContainerStyle={styles.scrollArea}>
+        <View style={styles.grid}>
+          {IMAGE_LIST.map((item) => (
+            <View key={item.id} style={[styles.gridItem, { width: itemSize, height: itemSize }]}>
+              <GridImage item={item} />
             </View>
           ))}
         </View>
@@ -118,47 +81,32 @@ export default function RakitLayarUtama() {
   );
 }
 
-const gaya = StyleSheet.create({
-  wadahUlu: {
+const styles = StyleSheet.create({
+  container: {
     flex: 1,
     backgroundColor: '#111',
   },
-  areaJudul: {
+  scrollArea: {
+    alignItems: 'center',
     paddingVertical: 20,
-    paddingHorizontal: 16,
-    alignItems: 'center',
   },
-  teksJudul: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#fff',
-    marginBottom: 4,
-  },
-  teksSubJudul: {
-    fontSize: 16,
-    color: '#aaa',
-  },
-  areaGulir: {
-    alignItems: 'center',
-    paddingBottom: 20,
-    paddingHorizontal: 6,
-  },
-  penataanKisi: {
+  grid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'center',
-    width: '100%',
-    maxWidth: 960,
   },
-  wadahButirKisi: {
+  gridItem: {
     margin: 6,
     backgroundColor: '#222',
     borderRadius: 10,
     overflow: 'hidden',
-    elevation: 5,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.8,
-    shadowRadius: 2,
+  },
+  imageWrapper: {
+    flex: 1,
+  },
+  image: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 10,
   },
 });
