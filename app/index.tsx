@@ -21,57 +21,60 @@ type EntitasTampil = {
 };
 
 // --- DATA UTAMA ---
-const BANK_DATA_PERSONA: TemplatPersona[] = [
-  { stambuk: '105841102922', identitas: 'A Ikram Mukarram' },
-  { stambuk: '105841103022', identitas: 'Ahmad Fathir' },
-  { stambuk: '105841103122', identitas: 'Nur Muhammad Ashman' },
-  { stambuk: '105841103222', identitas: 'A Muh Fardan Saputra' },
-  { stambuk: '105841103322', identitas: 'Muhammad Faturrachman Iswan' },
-  { stambuk: '105841103422', identitas: 'Nurmisba (Fokus)' }, // Fokus
-  { stambuk: '105841103522', identitas: 'Alviansyah Burhani' },
-  { stambuk: '105841103622', identitas: 'Majeri' },
-  { stambuk: '105841103722', identitas: 'Hamdani' },
-  { stambuk: '105841103822', identitas: 'Muliana' },
-  { stambuk: '105841103922', identitas: 'Yusri Ali' },
-];
+const BANK_DATA_PERSONA: TemplatPersona[] = Array.from({ length: 40 }, (_, i) => {
+  const customNames: { [key: number]: string } = {
+    28: 'Siti Marwah',
+    29: 'Nur Milani Hidayah',
+    30: 'Andi Citra',
+    31: 'Parwati',
+    32: 'Nabila',
+    34: 'Hamdani',
+    35: 'Majeri',
+    36: 'Ali',
+    37: 'Fathir',
+    38: 'Alviansyah',
+  };
 
-// --- KOLEKSI 10 FONT (5 statis, 5 variabel) ---
+  const index = i;
+  const stambuk = `10584110${300 + i}`;
+  const identitas =
+    customNames[index] ?? `Nama ke-${i + 1}${i === 33 ? ' (Fokus)' : ''}`;
+
+  return { stambuk, identitas };
+});
+
+// --- KOLEKSI FONT (10) ---
 const KOLEKSI_CORAK_AKSARA = [
-  'AksaraGotik',         // Statis
-  'AksaraPiksel',        // Variabel
-  'AksaraLogam',         // Variabel
-  'AksaraMenakutkan',    // Statis
-  'AksaraDarah',         // Statis
-  'AksaraBergelombang',  // Statis
-  'AksaraPrisma',        // Statis
-  'AksaraGeometris',     // Statis
-  'AksaraAntik',         // Variabel
-  'AksaraKuas',          // Statis
+  'AksaraGotik',
+  'AksaraPiksel',
+  'AksaraLogam',
+  'AksaraMenakutkan',
+  'AksaraDarah',
+  'AksaraBergelombang',
+  'AksaraPrisma',
+  'AksaraGeometris',
+  'AksaraAntik',
+  'AksaraKuas',
 ];
 
-// --- PEMROSESAN NAMA DI SEKITAR STAMBUK FOKUS ---
-function prosesiPenyusunanPersona(stambukFokus: string): EntitasTampil[] {
-  const indeksFokus = BANK_DATA_PERSONA.findIndex(p => p.stambuk === stambukFokus);
-  if (indeksFokus === -1) return [];
+// --- PEMROSESAN CIRCULAR INDEX ---
+function prosesiPenyusunanPersona(indexFokus: number): EntitasTampil[] {
+  const panjang = BANK_DATA_PERSONA.length;
 
-  const personaSebelum = BANK_DATA_PERSONA.slice(Math.max(0, indeksFokus - 5), indeksFokus);
-  const personaSesudah = BANK_DATA_PERSONA.slice(indeksFokus + 1, indeksFokus + 6);
+  const getIndex = (offset: number) => (indexFokus + offset + panjang) % panjang;
+
+  const personaSebelum = Array.from({ length: 5 }, (_, i) => BANK_DATA_PERSONA[getIndex(-5 + i)]);
+  const personaSesudah = Array.from({ length: 5 }, (_, i) => BANK_DATA_PERSONA[getIndex(1 + i)]);
   const personaTerpilih = [...personaSebelum, ...personaSesudah];
 
-  // Aturan tambahan: jika stambuk termasuk indeks rendah (misal, stambuk < '105841103222'), tandai khusus
-  return personaTerpilih.map((persona, i) => {
-    const corakAksara = KOLEKSI_CORAK_AKSARA[i % KOLEKSI_CORAK_AKSARA.length];
-    return {
-      ...persona,
-      identitas: persona.stambuk < '105841103222' ? `🌟 ${persona.identitas}` : persona.identitas,
-      corakAksara,
-    };
-  });
+  return personaTerpilih.map((persona, i) => ({
+    ...persona,
+    corakAksara: KOLEKSI_CORAK_AKSARA[i % KOLEKSI_CORAK_AKSARA.length],
+  }));
 }
 
-const KUMPULAN_ENTITAS_TAMPIL = prosesiPenyusunanPersona('105841103422');
+const KUMPULAN_ENTITAS_TAMPIL = prosesiPenyusunanPersona(33); // index ke-33 = urutan ke-34
 
-// --- KOMPONEN INDIVIDU ---
 type FragmenPersonaProps = {
   entitas: EntitasTampil;
 };
@@ -84,20 +87,18 @@ const FragmenPersona: React.FC<FragmenPersonaProps> = ({ entitas }) => (
   </View>
 );
 
-// --- UTAMA ---
 export default function ArenaPresentasi() {
   const [koleksiSiap, terjadiAnomali] = useFonts({
-    // --- FONT STATIS & VARIABEL DIMUAT DI SINI ---
-    'AksaraGotik': require('../assets/fonts/BungeeShade-Regular.ttf'), // Statis
-    'AksaraPiksel': require('../assets/fonts/Cabin-Italic-VariableFont_wdth,wght.ttf'), // Variabel
-    'AksaraLogam': require('../assets/fonts/Foldit-VariableFont_wght.ttf'), // Variabel
-    'AksaraMenakutkan': require('../assets/fonts/Geo-Italic.ttf'), // Statis
-    'AksaraDarah': require('../assets/fonts/Kings-Regular.ttf'), // Statis
-    'AksaraBergelombang': require('../assets/fonts/LovedbytheKing-Regular.ttf'), // Statis
-    'AksaraPrisma': require('../assets/fonts/Megrim-Regular.ttf'), // Statis
-    'AksaraGeometris': require('../assets/fonts/Oi-Regular.ttf'), // Statis
-    'AksaraAntik': require('../assets/fonts/Texturina-VariableFont_opsz,wght.ttf'), // Variabel
-    'AksaraKuas': require('../assets/fonts/ZenDots-Regular.ttf'), // Statis
+    'AksaraGotik': require('../assets/fonts/BungeeShade-Regular.ttf'),
+    'AksaraPiksel': require('../assets/fonts/Cabin-Italic-VariableFont_wdth,wght.ttf'),
+    'AksaraLogam': require('../assets/fonts/Foldit-VariableFont_wght.ttf'),
+    'AksaraMenakutkan': require('../assets/fonts/Geo-Italic.ttf'),
+    'AksaraDarah': require('../assets/fonts/Kings-Regular.ttf'),
+    'AksaraBergelombang': require('../assets/fonts/LovedbytheKing-Regular.ttf'),
+    'AksaraPrisma': require('../assets/fonts/Megrim-Regular.ttf'),
+    'AksaraGeometris': require('../assets/fonts/Oi-Regular.ttf'),
+    'AksaraAntik': require('../assets/fonts/Texturina-VariableFont_opsz,wght.ttf'),
+    'AksaraKuas': require('../assets/fonts/ZenDots-Regular.ttf'),
   });
 
   if (!koleksiSiap) {
@@ -135,7 +136,6 @@ export default function ArenaPresentasi() {
   );
 }
 
-// --- GAYA ---
 const TataRiasVisual = StyleSheet.create({
   areaAman: { flex: 1, backgroundColor: '#0A0A0A' },
   wadahKontenGulir: { paddingHorizontal: 16, paddingVertical: 24 },
