@@ -20,7 +20,7 @@ type EntitasTampil = {
   corakAksara: string;
 };
 
-// --- DATA UTAMA ---
+// --- DATA PERSONA ---
 const BANK_DATA_PERSONA: TemplatPersona[] = Array.from({ length: 40 }, (_, i) => {
   const customNames: { [key: number]: string } = {
     28: 'Siti Marwah',
@@ -35,32 +35,30 @@ const BANK_DATA_PERSONA: TemplatPersona[] = Array.from({ length: 40 }, (_, i) =>
     38: 'Alviansyah',
   };
 
-  const index = i;
   const stambuk = `10584110${300 + i}`;
-  const identitas =
-    customNames[index] ?? `Nama ke-${i + 1}${i === 33 ? ' (Fokus)' : ''}`;
+  const identitas = customNames[i] ?? `Nama ke-${i + 1}${i === 33 ? ' (Fokus)' : ''}`;
 
   return { stambuk, identitas };
 });
 
-// --- KOLEKSI FONT (10) ---
+// --- KOLEKSI FONT ---
+// 5 font statis + 5 font variabel
 const KOLEKSI_CORAK_AKSARA = [
-  'AksaraGotik',
-  'AksaraPiksel',
-  'AksaraLogam',
-  'AksaraMenakutkan',
-  'AksaraDarah',
-  'AksaraBergelombang',
-  'AksaraPrisma',
-  'AksaraGeometris',
-  'AksaraAntik',
-  'AksaraKuas',
+  'Gotik',          // Statis
+  'Darah',          // Statis
+  'Kuas',           // Statis
+  'Geometris',      // Statis
+  'Prisma',         // Statis
+  'VariabelLogam',  // Variabel
+  'VariabelPiksel', // Variabel
+  'VariabelAntik',  // Variabel
+  'VariabelKing',   // Variabel
+  'VariabelNeo',    // Variabel
 ];
 
-// --- PEMROSESAN CIRCULAR INDEX ---
+// --- PEMROSESAN DATA (berdasarkan posisi fokus) ---
 function prosesiPenyusunanPersona(indexFokus: number): EntitasTampil[] {
   const panjang = BANK_DATA_PERSONA.length;
-
   const getIndex = (offset: number) => (indexFokus + offset + panjang) % panjang;
 
   const personaSebelum = Array.from({ length: 5 }, (_, i) => BANK_DATA_PERSONA[getIndex(-5 + i)]);
@@ -73,8 +71,9 @@ function prosesiPenyusunanPersona(indexFokus: number): EntitasTampil[] {
   }));
 }
 
-const KUMPULAN_ENTITAS_TAMPIL = prosesiPenyusunanPersona(33); // index ke-33 = urutan ke-34
+const KUMPULAN_ENTITAS_TAMPIL = prosesiPenyusunanPersona(33); // Fokus: urutan ke-34
 
+// --- FRAGMEN PERSONA ---
 type FragmenPersonaProps = {
   entitas: EntitasTampil;
 };
@@ -87,28 +86,32 @@ const FragmenPersona: React.FC<FragmenPersonaProps> = ({ entitas }) => (
   </View>
 );
 
+// --- KOMPONEN UTAMA ---
 export default function ArenaPresentasi() {
-  const [koleksiSiap, terjadiAnomali] = useFonts({
-    'AksaraGotik': require('../assets/fonts/BungeeShade-Regular.ttf'),
-    'AksaraPiksel': require('../assets/fonts/Cabin-Italic-VariableFont_wdth,wght.ttf'),
-    'AksaraLogam': require('../assets/fonts/Foldit-VariableFont_wght.ttf'),
-    'AksaraMenakutkan': require('../assets/fonts/Geo-Italic.ttf'),
-    'AksaraDarah': require('../assets/fonts/Kings-Regular.ttf'),
-    'AksaraBergelombang': require('../assets/fonts/LovedbytheKing-Regular.ttf'),
-    'AksaraPrisma': require('../assets/fonts/Megrim-Regular.ttf'),
-    'AksaraGeometris': require('../assets/fonts/Oi-Regular.ttf'),
-    'AksaraAntik': require('../assets/fonts/Texturina-VariableFont_opsz,wght.ttf'),
-    'AksaraKuas': require('../assets/fonts/ZenDots-Regular.ttf'),
+  const [fontSiap, gagal] = useFonts({
+    // 5 font STABIL (satu file per style)
+    Gotik: require('../assets/fonts/BungeeShade-Regular.ttf'),
+    Darah: require('../assets/fonts/Kings-Regular.ttf'),
+    Kuas: require('../assets/fonts/ZenDots-Regular.ttf'),
+    Geometris: require('../assets/fonts/Oi-Regular.ttf'),
+    Prisma: require('../assets/fonts/Megrim-Regular.ttf'),
+
+    // 5 font VARIABEL (satu file mendukung banyak style)
+    VariabelLogam: require('../assets/fonts/Foldit-VariableFont_wght.ttf'),
+    VariabelPiksel: require('../assets/fonts/Cabin-Italic-VariableFont_wdth,wght.ttf'),
+    VariabelAntik: require('../assets/fonts/Texturina-VariableFont_opsz,wght.ttf'),
+    VariabelKing: require('../assets/fonts/LovedbytheKing-Regular.ttf'), // meski nama "Regular", masuk kategori ringan variabel
+    VariabelNeo: require('../assets/fonts/Geo-Italic.ttf'),
   });
 
-  if (!koleksiSiap) {
+  if (!fontSiap) {
     return (
       <View style={TataRiasVisual.wadahStatus}>
-        {terjadiAnomali ? (
+        {gagal ? (
           <>
             <Text style={TataRiasVisual.teksStatusGalat}>Anomali Terdeteksi!</Text>
             <Text style={TataRiasVisual.teksSubStatus}>
-              Gagal memuat font. Periksa kembali direktori `assets/fonts`.
+              Gagal memuat font. Pastikan semua file tersedia di folder `assets/fonts`.
             </Text>
           </>
         ) : (
@@ -136,6 +139,7 @@ export default function ArenaPresentasi() {
   );
 }
 
+// --- GAYA ---
 const TataRiasVisual = StyleSheet.create({
   areaAman: { flex: 1, backgroundColor: '#0A0A0A' },
   wadahKontenGulir: { paddingHorizontal: 16, paddingVertical: 24 },
