@@ -1,131 +1,160 @@
-import React from 'react';
-import { Text, View, StyleSheet, ScrollView, ActivityIndicator } from 'react-native';
 import { useFonts } from 'expo-font';
+import React from 'react';
+import { ActivityIndicator, SafeAreaView, ScrollView, StyleSheet, Text, View } from 'react-native';
 
-// Senarai insan (daftar nama) yang akan ditampilkan.
-// 5 nama sebelum stambuk Anda dan 5 nama sesudahnya.
-const SENARAI_INSAN = [
-  { nama: 'A Ikram Mukarram', rupaAksara: 'AksaraBungeeShade' },
-  { nama: 'Ahmad Fathir', rupaAksara: 'AksaraOi' },
-  { nama: 'Nur Muhammad Ashman', rupaAksara: 'AksaraZenDots' },
-  { nama: 'A Muh Fardan Saputra', rupaAksara: 'AksaraMegrim' },
-  { nama: 'Muhammad Faturrachman Iswan', rupaAksara: 'AksaraGeo' },
-  { nama: 'Alviansyah Burhani', rupaAksara: 'AksaraBlaka' },
-  { nama: 'Majeri', rupaAksara: 'AksaraFoldit' },
-  { nama: 'Hamdani', rupaAksara: 'AksaraKings' },
-  { nama: 'Muliana', rupaAksara: 'AksaraTexturina' },
-  { nama: 'Yusri Ali', rupaAksara: 'AksaraRecursive' },
+// --- BAGIAN 1: TIPE DATA DAN PENGOLAHAN ---
+
+/**
+ * @typedef {Object} TemplatPersona
+ * @property {string} stambuk - Nomor registrasi unik.
+ * @property {string} identitas - Nama lengkap individu.
+ */
+type TemplatPersona = {
+  stambuk: string;
+  identitas: string;
+};
+
+/**
+ * @typedef {Object} EntitasTampil
+ * @property {string} stambuk - Nomor registrasi unik.
+ * @property {string} identitas - Nama lengkap individu.
+ * @property {string} corakAksara - Kunci alias untuk rupa huruf.
+ */
+type EntitasTampil = {
+  stambuk: string;
+  identitas: string;
+  corakAksara: string;
+};
+
+// Bank data mentah yang berisi semua persona.
+const BANK_DATA_PERSONA: TemplatPersona[] = [
+  { stambuk: '105841102922', identitas: 'A Ikram Mukarram' },
+  { stambuk: '105841103022', identitas: 'Ahmad Fathir' },
+  { stambuk: '105841103122', identitas: 'Nur Muhammad Ashman' },
+  { stambuk: '105841103222', identitas: 'A Muh Fardan Saputra' },
+  { stambuk: '105841103322', identitas: 'Muhammad Faturrachman Iswan' },
+  { stambuk: '105841103422', identitas: 'Nurmisba (Fokus)' }, // Fokus
+  { stambuk: '105841103522', identitas: 'Alviansyah Burhani' },
+  { stambuk: '105841103622', identitas: 'Majeri' },
+  { stambuk: '105841103722', identitas: 'Hamdani' },
+  { stambuk: '105841103822', identitas: 'Muliana' },
+  { stambuk: '105841103922', identitas: 'Yusri Ali' },
 ];
 
-export default function LayarSenaraiNamaBeraksara() {
-  // Memuat semua rupa aksara (font) ke dalam aplikasi.
-  // Kunci objek (misal: 'AksaraBungeeShade') adalah nama yang akan dipakai di `fontFamily`.
-  // Nilai objek adalah path ke file font di folder `assets/fonts`.
-  const [aksaraTelahDimuat, galatMemuat] = useFonts({
-    // ----- 5 FONT STATIS -----
-    'AksaraBungeeShade': require('../assets/fonts/BungeeShade-Regular.ttf'),
-    'AksaraOi': require('../assets/fonts/Cabin-Italic-VariableFont_wdth,wght.ttf'),
-    'AksaraZenDots': require('../assets/fonts/Foldit-VariableFont_wght.ttf'),
-    'AksaraMegrim': require('../assets/fonts/Geo-Italic.ttf'),
-    'AksaraGeo': require('../assets/fonts/Kings-Regular.ttf'),
+// Koleksi font
+const KOLEKSI_CORAK_AKSARA = [
+  'AksaraGotik', 'AksaraPiksel', 'AksaraLogam', 'AksaraMenakutkan', 'AksaraDarah',
+  'AksaraBergelombang', 'AksaraPrisma', 'AksaraGeometris', 'AksaraAntik', 'AksaraKuas'
+];
 
-    // ----- 5 FONT VARIABEL -----
-    'AksaraBlaka': require('../assets/fonts/LovedbytheKing-Regular.ttf'),
-    'AksaraFoldit': require('../assets/fonts/Megrim-Regular.ttf'),
-    'AksaraKings': require('../assets/fonts/Oi-Regular.ttf'),
-    'AksaraTexturina': require('../assets/fonts/Texturina-VariableFont_opsz,wght.ttf'),
-    'AksaraRecursive': require('../assets/fonts/ZenDots-Regular.ttf'),
+/**
+ * Menyusun daftar persona sekitar stambuk fokus.
+ * @param stambukFokus - Nomor stambuk yang menjadi fokus
+ * @returns Daftar persona siap ditampilkan
+ */
+function prosesiPenyusunanPersona(stambukFokus: string): EntitasTampil[] {
+  const indeksFokus = BANK_DATA_PERSONA.findIndex(p => p.stambuk === stambukFokus);
+
+  if (indeksFokus === -1) return [];
+
+  const personaSebelum = BANK_DATA_PERSONA.slice(Math.max(0, indeksFokus - 5), indeksFokus);
+  const personaSesudah = BANK_DATA_PERSONA.slice(indeksFokus + 1, indeksFokus + 6);
+  const personaTerpilih = [...personaSebelum, ...personaSesudah];
+
+  return personaTerpilih.map((persona, indeks) => ({
+    ...persona,
+    corakAksara: KOLEKSI_CORAK_AKSARA[indeks % KOLEKSI_CORAK_AKSARA.length],
+  }));
+}
+
+const KUMPULAN_ENTITAS_TAMPIL = prosesiPenyusunanPersona('105841103422');
+
+// --- BAGIAN 2: KOMPONEN UI ---
+
+type FragmenPersonaProps = {
+  entitas: EntitasTampil;
+};
+
+const FragmenPersona: React.FC<FragmenPersonaProps> = ({ entitas }) => (
+  <View style={TataRiasVisual.wadahFragmen}>
+    <Text style={[TataRiasVisual.teksIdentitas, { fontFamily: entitas.corakAksara }]}>
+      {entitas.identitas}
+    </Text>
+  </View>
+);
+
+export default function ArenaPresentasi() {
+  const [koleksiSiap, terjadiAnomali] = useFonts({
+    'AksaraGotik': require('../assets/fonts/BungeeShade-Regular.ttf'),
+    'AksaraPiksel': require('../assets/fonts/Cabin-Italic-VariableFont_wdth,wght.ttf'),
+    'AksaraLogam': require('../assets/fonts/Foldit-VariableFont_wght.ttf'),
+    'AksaraMenakutkan': require('../assets/fonts/Geo-Italic.ttf'),
+    'AksaraDarah': require('../assets/fonts/Kings-Regular.ttf'),
+    'AksaraBergelombang': require('../assets/fonts/LovedbytheKing-Regular.ttf'),
+    'AksaraPrisma': require('../assets/fonts/Megrim-Regular.ttf'),
+    'AksaraGeometris': require('../assets/fonts/Oi-Regular.ttf'),
+    'AksaraAntik': require('../assets/fonts/Texturina-VariableFont_opsz,wght.ttf'),
+    'AksaraKuas': require('../assets/fonts/ZenDots-Regular.ttf'),
   });
 
-  // Jika aksara (font) sedang dalam proses memuat, tampilkan indikator pemuatan.
-  if (!aksaraTelahDimuat && !galatMemuat) {
+  if (!koleksiSiap) {
     return (
-      <View style={gayaRupa.wadahPemuatan}>
-        <ActivityIndicator size="large" color="#ffffff" />
-        <Text style={gayaRupa.teksPemuatan}>Sedang memuat aksara...</Text>
+      <View style={TataRiasVisual.wadahStatus}>
+        {terjadiAnomali ? (
+          <>
+            <Text style={TataRiasVisual.teksStatusGalat}>Anomali Terdeteksi!</Text>
+            <Text style={TataRiasVisual.teksSubStatus}>Gagal memuat font. Periksa direktori 'assets/fonts'.</Text>
+          </>
+        ) : (
+          <>
+            <ActivityIndicator size="large" color="#8E8E93" />
+            <Text style={TataRiasVisual.teksStatus}>Menginisialisasi Repositori Aksara...</Text>
+          </>
+        )}
       </View>
     );
   }
 
-  // Jika terjadi galat (error) saat memuat font, tampilkan pesan galat.
-  if (galatMemuat) {
-      return (
-        <View style={gayaRupa.wadahPemuatan}>
-            <Text style={gayaRupa.teksGalat}>Terjadi galat saat memuat aksara!</Text>
-            <Text style={gayaRupa.teksGalatKecil}>Pastikan file font ada di 'assets/fonts/'</Text>
-        </View>
-      )
-  }
-
-  // Jika aksara berhasil dimuat, tampilkan daftar nama dengan font yang sesuai.
   return (
-    <ScrollView style={gayaRupa.wadahGulir} contentContainerStyle={gayaRupa.kontenGulir}>
-      <Text style={gayaRupa.judulLaman}>Daftar Nama</Text>
-      {SENARAI_INSAN.map((insan, indeks) => (
-        <View key={indeks} style={gayaRupa.wadahTeks}>
-          <Text style={[gayaRupa.teksNama, { fontFamily: insan.rupaAksara }]}>
-            {insan.nama}
-          </Text>
+    <SafeAreaView style={TataRiasVisual.areaAman}>
+      <ScrollView contentContainerStyle={TataRiasVisual.wadahKontenGulir}>
+        <View style={TataRiasVisual.wadahJudul}>
+          <Text style={TataRiasVisual.teksJudul}>Daftar Nama</Text>
+          <View style={TataRiasVisual.pemisahJudul} />
         </View>
-      ))}
-    </ScrollView>
+        {KUMPULAN_ENTITAS_TAMPIL.map((entitas) => (
+          <FragmenPersona key={entitas.stambuk} entitas={entitas} />
+        ))}
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
-// `gayaRupa` mendefinisikan seluruh penataan visual komponen di layar.
-const gayaRupa = StyleSheet.create({
-  wadahGulir: {
-    flex: 1,
-    backgroundColor: '#1C1C1E', // Latar belakang gelap
-  },
-  kontenGulir: {
-    alignItems: 'center',
-    paddingVertical: 40,
-    paddingHorizontal: 20,
-  },
-  wadahPemuatan: {
-    flex: 1,
+const TataRiasVisual = StyleSheet.create({
+  areaAman: { flex: 1, backgroundColor: '#0A0A0A' },
+  wadahKontenGulir: { paddingHorizontal: 16, paddingVertical: 24 },
+  wadahStatus: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#0A0A0A', padding: 20 },
+  teksStatus: { marginTop: 20, fontSize: 16, color: '#8E8E93' },
+  teksStatusGalat: { fontSize: 20, color: '#FF453A', fontWeight: 'bold', textAlign: 'center' },
+  teksSubStatus: { marginTop: 8, fontSize: 14, color: '#8E8E93', textAlign: 'center' },
+  wadahJudul: { alignItems: 'center', marginBottom: 24 },
+  teksJudul: { fontSize: 26, fontWeight: '700', color: '#F2F2F7', letterSpacing: 1 },
+  pemisahJudul: { height: 2, width: 60, backgroundColor: '#48484A', marginTop: 10 },
+  wadahFragmen: {
+    backgroundColor: '#1D1D1F',
+    borderRadius: 18,
+    padding: 24,
+    marginBottom: 16,
+    minHeight: 90,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#1C1C1E',
+    borderWidth: 1,
+    borderColor: '#3A3A3C',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 5,
+    elevation: 8,
   },
-  teksPemuatan: {
-    marginTop: 15,
-    fontSize: 16,
-    color: '#cccccc',
-  },
-  teksGalat: {
-      fontSize: 18,
-      color: '#ff4d4d',
-      fontWeight: 'bold',
-  },
-  teksGalatKecil: {
-      fontSize: 14,
-      color: '#aaaaaa',
-      marginTop: 8,
-  },
-  judulLaman: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#FFFFFF',
-    marginBottom: 30,
-    textAlign: 'center',
-  },
-  wadahTeks: {
-    backgroundColor: '#2C2C2E',
-    borderRadius: 12,
-    paddingVertical: 20,
-    paddingHorizontal: 25,
-    marginBottom: 15,
-    width: '100%',
-    maxWidth: 600,
-    minHeight: 80, // memastikan tinggi cukup untuk font besar
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  teksNama: {
-    fontSize: 24, // Ukuran dasar, beberapa font mungkin tampak lebih besar/kecil
-    color: '#E5E5EA',
-    textAlign: 'center',
-  },
+  teksIdentitas: { fontSize: 28, color: '#F2F2F7', textAlign: 'center' },
 });
