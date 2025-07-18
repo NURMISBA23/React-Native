@@ -27,20 +27,37 @@ export default function DemoFinalNurmisba() {
     );
   }
 
-  // Data Mahasiswa
+  // Data Mahasiswa (20 total)
   const mahasiswa = [
-    { nama: 'Ahmad Fathir', stambuk: '105841102922', font: 'Geo-Italic' },
-    { nama: 'Nur Muhammad Ashman', stambuk: '105841103022', font: 'Kings-Regular' },
+    { nama: 'Rizki Akbar', stambuk: '105841103022', font: 'Geo-Italic' },
+    { nama: 'Budi Santoso', stambuk: '105841103122', font: 'Kings-Regular' },
     { nama: 'A Ikram Mukarram', stambuk: '105841103122', font: 'LovedbytheKing-Regular' },
-    { nama: 'A Muh Fardhan Saputra', stambuk: '105841103222', font: 'Oi-Regular' },
+    { nama: 'Sinta Agustin', stambuk: '105841103222', font: 'Oi-Regular' },
     { nama: 'Alviansyah Burhani', stambuk: '105841103322', font: 'BungeeShade-Regular' },
-
+    { nama: 'Ahmad Fathir', stambuk: '105841103422', font: 'Geo-Italic' },
+    { nama: 'Nurmisba', stambuk: '105841103422', font: 'Kings-Regular' },
     { nama: 'Hamdani', stambuk: '105841103522', font: 'Cabin-Variable', weight: '400' },
     { nama: 'Muliana', stambuk: '105841103622', font: 'Foldit-Variable', weight: '600' },
     { nama: 'Yusri Ali', stambuk: '105841103722', font: 'RobotoFlex-Variable', weight: '700' },
     { nama: 'Siti Marwa', stambuk: '105841103822', font: 'SourceSans3-Variable', weight: '300' },
     { nama: 'Arif Rahman', stambuk: '105841103922', font: 'Texturina-Variable', weight: '500' },
+    { nama: 'Putri Wahyuni', stambuk: '105841104022', font: 'Cabin-Variable', weight: '500' },
+    { nama: 'Fikri Maulana', stambuk: '105841104122', font: 'Foldit-Variable', weight: '600' },
+    { nama: 'Rizwan Malik', stambuk: '105841104222', font: 'RobotoFlex-Variable', weight: '500' },
+    { nama: 'Hendra Gunawan', stambuk: '105841104322', font: 'SourceSans3-Variable', weight: '300' },
+    { nama: 'Salsabila', stambuk: '105841104422', font: 'Texturina-Variable', weight: '400' },
+    { nama: 'Andi Saputra', stambuk: '105841104522', font: 'Geo-Italic' },
+    { nama: 'Lia Septiani', stambuk: '105841104622', font: 'Kings-Regular' },
+    { nama: 'Rahma Aulia', stambuk: '105841104722', font: 'Oi-Regular' },
   ];
+
+  const stambukTarget = '105841103422';
+
+  // Urutkan berdasarkan stambuk ASC
+  const sorted = mahasiswa.sort((a, b) => a.stambuk.localeCompare(b.stambuk));
+
+  const sebelum = sorted.filter(m => m.stambuk < stambukTarget).slice(-5);
+  const sesudah = sorted.filter(m => m.stambuk > stambukTarget).slice(0, 5);
 
   return (
     <SafeAreaView style={gaya.latarBelakang}>
@@ -48,20 +65,22 @@ export default function DemoFinalNurmisba() {
         <Text style={[gaya.judulHalaman, { fontFamily: 'BungeeShade-Regular' }]}>
           Final Showcase - Nurmisba
         </Text>
-        <Text style={gaya.subjudulHalaman}>Stambuk: 105841103422</Text>
+        <Text style={gaya.subjudulHalaman}>Stambuk: {stambukTarget}</Text>
 
         <View style={gaya.pemisah} />
         <Text style={gaya.keterangan}>
-          👇 Berikut adalah 10 nama mahasiswa dengan variasi font:
+          👇 Berikut adalah 10 nama mahasiswa **sebelum** stambuk:
         </Text>
 
-        {/* === 5 Nama Sebelum Stambuk === */}
-        {mahasiswa.slice(0, 5).map((mhs, index) => (
+        {sebelum.map((mhs, index) => (
           <Text
-            key={index}
+            key={`sebelum-${index}`}
             style={[
               gaya.item,
-              { fontFamily: mhs.font },
+              {
+                fontFamily: mhs.font,
+                ...(mhs.weight ? { fontWeight: mhs.weight as '100' | '200' | '300' | '400' | '500' | '600' | '700' | '800' | '900' } : {}),
+              },
             ]}
           >
             {mhs.nama}{'\n'}({mhs.stambuk})
@@ -69,16 +88,18 @@ export default function DemoFinalNurmisba() {
         ))}
 
         <View style={gaya.pemisah} />
+        <Text style={gaya.keterangan}>
+          👇 Berikut adalah 10 nama mahasiswa **setelah** stambuk:
+        </Text>
 
-        {/* === 5 Nama Setelah Stambuk === */}
-        {mahasiswa.slice(5).map((mhs, index) => (
+        {sesudah.map((mhs, index) => (
           <Text
-            key={index + 5}
+            key={`sesudah-${index}`}
             style={[
               gaya.item,
               {
-                fontFamily: 'Anto-Regular',
-                fontWeight:'400'
+                fontFamily: mhs.font,
+                ...(mhs.weight ? { fontWeight: mhs.weight as '100' | '200' | '300' | '400' | '500' | '600' | '700' | '800' | '900' } : {}),
               },
             ]}
           >
