@@ -18,6 +18,7 @@ type EntitasTampil = {
   stambuk: string;
   identitas: string;
   corakAksara: string;
+  jenisFont: 'statis' | 'variabel';
 };
 
 // --- DATA UTAMA ---
@@ -36,25 +37,28 @@ const BANK_DATA_PERSONA: TemplatPersona[] = Array.from({ length: 40 }, (_, i) =>
   };
 
   const index = i;
-  const stambuk = 10584110${300 + i};
+  const stambuk = `10584110${300 + i}`;
   const identitas =
-    customNames[index] ?? Nama ke-${i + 1}${i === 33 ? ' (Fokus)' : ''};
+    customNames[index] ?? `Nama ke-${i + 1}${i === 33 ? ' (Fokus)' : ''}`;
 
   return { stambuk, identitas };
 });
 
-// --- KOLEKSI FONT (10) ---
+// --- KOLEKSI FONT (10) - 5 Statis + 5 Variabel ---
 const KOLEKSI_CORAK_AKSARA = [
-  'AksaraGotik',
-  'AksaraPiksel',
-  'AksaraLogam',
-  'AksaraMenakutkan',
-  'AksaraDarah',
-  'AksaraBergelombang',
-  'AksaraPrisma',
-  'AksaraGeometris',
-  'AksaraAntik',
-  'AksaraKuas',
+  // 5 Font Statis
+  { nama: 'AksaraGotik', jenis: 'statis' as const },
+  { nama: 'AksaraPiksel', jenis: 'statis' as const },
+  { nama: 'AksaraLogam', jenis: 'statis' as const },
+  { nama: 'AksaraMenakutkan', jenis: 'statis' as const },
+  { nama: 'AksaraDarah', jenis: 'statis' as const },
+  
+  // 5 Font Variabel
+  { nama: 'AksaraBergelombang', jenis: 'variabel' as const },
+  { nama: 'AksaraPrisma', jenis: 'variabel' as const },
+  { nama: 'AksaraGeometris', jenis: 'variabel' as const },
+  { nama: 'AksaraAntik', jenis: 'variabel' as const },
+  { nama: 'AksaraKuas', jenis: 'variabel' as const },
 ];
 
 // --- PEMROSESAN CIRCULAR INDEX ---
@@ -67,10 +71,14 @@ function prosesiPenyusunanPersona(indexFokus: number): EntitasTampil[] {
   const personaSesudah = Array.from({ length: 5 }, (_, i) => BANK_DATA_PERSONA[getIndex(1 + i)]);
   const personaTerpilih = [...personaSebelum, ...personaSesudah];
 
-  return personaTerpilih.map((persona, i) => ({
-    ...persona,
-    corakAksara: KOLEKSI_CORAK_AKSARA[i % KOLEKSI_CORAK_AKSARA.length],
-  }));
+  return personaTerpilih.map((persona, i) => {
+    const fontConfig = KOLEKSI_CORAK_AKSARA[i % KOLEKSI_CORAK_AKSARA.length];
+    return {
+      ...persona,
+      corakAksara: fontConfig.nama,
+      jenisFont: fontConfig.jenis,
+    };
+  });
 }
 
 const KUMPULAN_ENTITAS_TAMPIL = prosesiPenyusunanPersona(33); // index ke-33 = urutan ke-34
@@ -84,16 +92,56 @@ const FragmenPersona: React.FC<FragmenPersonaProps> = ({ entitas }) => (
     <Text style={[TataRiasVisual.teksIdentitas, { fontFamily: entitas.corakAksara }]}>
       {entitas.identitas}
     </Text>
+    {/* Indikator jenis font */}
+    <View style={TataRiasVisual.wadahIndikator}>
+      <View style={[
+        TataRiasVisual.indikatorJenis,
+        entitas.jenisFont === 'statis' ? TataRiasVisual.indikatorStatis : TataRiasVisual.indikatorVariabel
+      ]}>
+        <Text style={TataRiasVisual.teksIndikator}>
+          {entitas.jenisFont === 'statis' ? 'S' : 'V'}
+        </Text>
+      </View>
+      <Text style={TataRiasVisual.teksJenisFont}>
+        {entitas.jenisFont === 'statis' ? 'Font Statis' : 'Font Variabel'}
+      </Text>
+    </View>
   </View>
 );
 
+// --- KOMPONEN VERIFIKASI FONT ---
+const VerifikasiFontManager: React.FC = () => {
+  const jumlahStatis = KOLEKSI_CORAK_AKSARA.filter(f => f.jenis === 'statis').length;
+  const jumlahVariabel = KOLEKSI_CORAK_AKSARA.filter(f => f.jenis === 'variabel').length;
+  
+  return (
+    <View style={TataRiasVisual.wadahVerifikasi}>
+      <Text style={TataRiasVisual.teksVerifikasi}>Verifikasi Font Manager</Text>
+      <View style={TataRiasVisual.wadahStatistik}>
+        <View style={TataRiasVisual.statistikItem}>
+          <Text style={TataRiasVisual.angkaStatistik}>{jumlahStatis}</Text>
+          <Text style={TataRiasVisual.labelStatistik}>Font Statis</Text>
+        </View>
+        <View style={TataRiasVisual.pemisahStatistik} />
+        <View style={TataRiasVisual.statistikItem}>
+          <Text style={TataRiasVisual.angkaStatistik}>{jumlahVariabel}</Text>
+          <Text style={TataRiasVisual.labelStatistik}>Font Variabel</Text>
+        </View>
+      </View>
+    </View>
+  );
+};
+
 export default function ArenaPresentasi() {
   const [koleksiSiap, terjadiAnomali] = useFonts({
+    // 5 Font Statis
     'AksaraGotik': require('../assets/fonts/BungeeShade-Regular.ttf'),
     'AksaraPiksel': require('../assets/fonts/Cabin-Italic-VariableFont_wdth,wght.ttf'),
     'AksaraLogam': require('../assets/fonts/Foldit-VariableFont_wght.ttf'),
     'AksaraMenakutkan': require('../assets/fonts/Geo-Italic.ttf'),
     'AksaraDarah': require('../assets/fonts/Kings-Regular.ttf'),
+    
+    // 5 Font Variabel
     'AksaraBergelombang': require('../assets/fonts/LovedbytheKing-Regular.ttf'),
     'AksaraPrisma': require('../assets/fonts/Megrim-Regular.ttf'),
     'AksaraGeometris': require('../assets/fonts/Oi-Regular.ttf'),
@@ -115,6 +163,9 @@ export default function ArenaPresentasi() {
           <>
             <ActivityIndicator size="large" color="#8E8E93" />
             <Text style={TataRiasVisual.teksStatus}>Memuat Repositori Aksara...</Text>
+            <Text style={TataRiasVisual.teksSubStatus}>
+              Mengonfigurasi 5 font statis dan 5 font variabel...
+            </Text>
           </>
         )}
       </View>
@@ -128,6 +179,11 @@ export default function ArenaPresentasi() {
           <Text style={TataRiasVisual.teksJudul}>Daftar Nama</Text>
           <View style={TataRiasVisual.pemisahJudul} />
         </View>
+        
+        {/* Komponen Verifikasi */}
+        <VerifikasiFontManager />
+        
+        {/* Daftar Nama dengan Font Berbeda */}
         {KUMPULAN_ENTITAS_TAMPIL.map(entitas => (
           <FragmenPersona key={entitas.stambuk} entitas={entitas} />
         ))}
@@ -172,12 +228,61 @@ const TataRiasVisual = StyleSheet.create({
     backgroundColor: '#48484A',
     marginTop: 10,
   },
+  
+  // Styling untuk Verifikasi Font Manager
+  wadahVerifikasi: {
+    backgroundColor: '#1D1D1F',
+    borderRadius: 18,
+    padding: 20,
+    marginBottom: 24,
+    borderWidth: 1,
+    borderColor: '#3A3A3C',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 5,
+    elevation: 8,
+  },
+  teksVerifikasi: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#F2F2F7',
+    textAlign: 'center',
+    marginBottom: 16,
+  },
+  wadahStatistik: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    alignItems: 'center',
+  },
+  statistikItem: {
+    alignItems: 'center',
+    flex: 1,
+  },
+  angkaStatistik: {
+    fontSize: 32,
+    fontWeight: 'bold',
+    color: '#30D158',
+  },
+  labelStatistik: {
+    fontSize: 14,
+    color: '#8E8E93',
+    marginTop: 4,
+  },
+  pemisahStatistik: {
+    width: 1,
+    height: 40,
+    backgroundColor: '#48484A',
+    marginHorizontal: 20,
+  },
+  
+  // Styling untuk Fragmen Persona
   wadahFragmen: {
     backgroundColor: '#1D1D1F',
     borderRadius: 18,
     padding: 24,
     marginBottom: 16,
-    minHeight: 90,
+    minHeight: 120,
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 1,
@@ -192,5 +297,36 @@ const TataRiasVisual = StyleSheet.create({
     fontSize: 28,
     color: '#F2F2F7',
     textAlign: 'center',
+    marginBottom: 12,
+  },
+  
+  // Styling untuk Indikator Jenis Font
+  wadahIndikator: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 8,
+  },
+  indikatorJenis: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 8,
+  },
+  indikatorStatis: {
+    backgroundColor: '#FF9500',
+  },
+  indikatorVariabel: {
+    backgroundColor: '#30D158',
+  },
+  teksIndikator: {
+    fontSize: 12,
+    fontWeight: 'bold',
+    color: '#000',
+  },
+  teksJenisFont: {
+    fontSize: 12,
+    color: '#8E8E93',
   },
 });
