@@ -136,17 +136,17 @@ export default function ArenaPresentasi() {
   const [koleksiSiap, terjadiAnomali] = useFonts({
     // 5 Font Statis
     'AksaraGotik': require('../assets/fonts/BungeeShade-Regular.ttf'),
-    'AksaraPiksel': require('../assets/fonts/Cabin-Italic-VariableFont_wdth,wght.ttf'),
-    'AksaraLogam': require('../assets/fonts/Foldit-VariableFont_wght.ttf'),
-    'AksaraMenakutkan': require('../assets/fonts/Geo-Italic.ttf'),
+    'AksaraPiksel': require('../assets/fonts/LovedbytheKing-Regular.ttf'),
+    'AksaraLogam': require('../assets/fonts/'),Megrim-Regular.ttf
+    'AksaraMenakutkan': require('../assets/fonts/Oi-Regular.ttf'),
     'AksaraDarah': require('../assets/fonts/Kings-Regular.ttf'),
     
     // 5 Font Variabel
-    'AksaraBergelombang': require('../assets/fonts/LovedbytheKing-Regular.ttf'),
-    'AksaraPrisma': require('../assets/fonts/Megrim-Regular.ttf'),
-    'AksaraGeometris': require('../assets/fonts/Oi-Regular.ttf'),
+    'AksaraBergelombang': require('../assets/fonts/Cabin-Italic-VariableFont_wdth,wght.ttf'),
+    'AksaraPrisma': require('../assets/fonts/Foldit-VariableFont_wght.ttf'),
+    'AksaraGeometris': require('../assets/fonts/RobotoFlex-VariableFont_GRAD,XOPQ,XTRA,YOPQ,YTAS,YTDE,YTFI,YTLC,YTUC,opsz,slnt,wdth,wght.ttf'),
     'AksaraAntik': require('../assets/fonts/Texturina-VariableFont_opsz,wght.ttf'),
-    'AksaraKuas': require('../assets/fonts/ZenDots-Regular.ttf'),
+    'AksaraKuas': require('../assets/fonts/SourceSans3-VariableFont_wght.ttf'),
   });
 
   if (!koleksiSiap) {
