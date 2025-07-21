@@ -1,167 +1,138 @@
-import { useFonts } from 'expo-font';
-import React from 'react';
-import { ActivityIndicator, SafeAreaView, ScrollView, StyleSheet, Text, View } from 'react-native';
+import React, { ComponentProps } from 'react';
+import { SafeAreaView, View, Text, StyleSheet, ScrollView } from 'react-native';
+// Impor berbagai keluarga ikon dari @expo/vector-icons
+import { FontAwesome, Ionicons, MaterialCommunityIcons, Feather, AntDesign } from '@expo/vector-icons';
 
-export default function DemoFinalNurmisba() {
-  const [fontsLoaded] = useFonts({
-    // Font Statis (5)
-    'BungeeShade-Regular': require('../assets/fonts/BungeeShade-Regular.ttf'),
-    'Geo-Italic': require('../assets/fonts/Geo-Italic.ttf'),
-    'Kings-Regular': require('../assets/fonts/Kings-Regular.ttf'),
-    'LovedbytheKing-Regular': require('../assets/fonts/LovedbytheKing-Regular.ttf'),
-    'Oi-Regular': require('../assets/fonts/Oi-Regular.ttf'),
+// --- Definisi Tipe untuk TypeScript ---
 
-    // Font Variabel (5)
-    'Cabin-Variable': require('../assets/fonts/Cabin-Italic-VariableFont_wdth,wght.ttf'),
-    'Foldit-Variable': require('../assets/fonts/Foldit-VariableFont_wght.ttf'),
-    'RobotoFlex-Variable': require('../assets/fonts/RobotoFlex-VariableFont_GRAD,XOPQ,XTRA,YOPQ,YTAS,YTDE,YTFI,YTLC,YTUC,opsz,slnt,wdth,wght.ttf'),
-    'SourceSans3-Variable': require('../assets/fonts/SourceSans3-VariableFont_wght.ttf'),
-    'Texturina-Variable': require('../assets/fonts/Texturina-VariableFont_opsz,wght.ttf'),
-  });
+// Tipe untuk objek ikon individual dalam daftar kita.
+// Ini memastikan setiap objek memiliki struktur yang benar.
+type IkonInfo = {
+  nama: string;
+  pustaka: keyof typeof ICON_LIBRARIES; // `pustaka` harus salah satu kunci dari ICON_LIBRARIES
+  warna: string;
+};
 
-  if (!fontsLoaded) {
-    return (
-      <View style={gaya.loading}>
-        <ActivityIndicator size="large" color="#000" />
-      </View>
-    );
-  }
+// Tipe untuk properti (props) dari komponen KartuIkon.
+type KartuIkonProps = {
+  ikon: IkonInfo;
+};
 
-  // Data Mahasiswa (20 total)
-  const mahasiswa = [
-    { nama: 'Rizki Akbar', stambuk: '105841103022', font: 'Geo-Italic' },
-    { nama: 'Budi Santoso', stambuk: '105841103122', font: 'Kings-Regular' },
-    { nama: 'A Ikram Mukarram', stambuk: '105841103122', font: 'LovedbytheKing-Regular' },
-    { nama: 'Sinta Agustin', stambuk: '105841103222', font: 'Oi-Regular' },
-    { nama: 'Alviansyah Burhani', stambuk: '105841103322', font: 'BungeeShade-Regular' },
-    { nama: 'Ahmad Fathir', stambuk: '105841103422', font: 'Geo-Italic' },
-    { nama: 'Nurmisba', stambuk: '105841103422', font: 'Kings-Regular' },
-    { nama: 'Hamdani', stambuk: '105841103522', font: 'Cabin-Variable', weight: '400' },
-    { nama: 'Muliana', stambuk: '105841103622', font: 'Foldit-Variable', weight: '600' },
-    { nama: 'Yusri Ali', stambuk: '105841103722', font: 'RobotoFlex-Variable', weight: '700' },
-    { nama: 'Siti Marwa', stambuk: '105841103822', font: 'SourceSans3-Variable', weight: '300' },
-    { nama: 'Arif Rahman', stambuk: '105841103922', font: 'Texturina-Variable', weight: '500' },
-    { nama: 'Putri Wahyuni', stambuk: '105841104022', font: 'Cabin-Variable', weight: '500' },
-    { nama: 'Fikri Maulana', stambuk: '105841104122', font: 'Foldit-Variable', weight: '600' },
-    { nama: 'Rizwan Malik', stambuk: '105841104222', font: 'RobotoFlex-Variable', weight: '500' },
-    { nama: 'Hendra Gunawan', stambuk: '105841104322', font: 'SourceSans3-Variable', weight: '300' },
-    { nama: 'Salsabila', stambuk: '105841104422', font: 'Texturina-Variable', weight: '400' },
-    { nama: 'Andi Saputra', stambuk: '105841104522', font: 'Geo-Italic' },
-    { nama: 'Lia Septiani', stambuk: '105841104622', font: 'Kings-Regular' },
-    { nama: 'Rahma Aulia', stambuk: '105841104722', font: 'Oi-Regular' },
-  ];
+// --- Konfigurasi Pustaka Ikon ---
 
-  const stambukTarget = '105841103422';
+// Definisikan tipe untuk setiap keluarga ikon yang akan kita gunakan.
+// Menggunakan ComponentProps dari React untuk secara otomatis mendapatkan tipe props yang benar.
+const ICON_LIBRARIES = {
+  FontAwesome: (props: ComponentProps<typeof FontAwesome>) => <FontAwesome {...props} />,
+  Ionicons: (props: ComponentProps<typeof Ionicons>) => <Ionicons {...props} />,
+  MaterialCommunityIcons: (props: ComponentProps<typeof MaterialCommunityIcons>) => <MaterialCommunityIcons {...props} />,
+  Feather: (props: ComponentProps<typeof Feather>) => <Feather {...props} />,
+  AntDesign: (props: ComponentProps<typeof AntDesign>) => <AntDesign {...props} />,
+};
 
-  // Urutkan berdasarkan stambuk ASC
-  const sorted = mahasiswa.sort((a, b) => a.stambuk.localeCompare(b.stambuk));
+// Daftar 10 ikon yang akan ditampilkan.
+// Diberi tipe IkonInfo[] untuk memastikan semua datanya konsisten.
+const DAFTAR_IKON: IkonInfo[] = [
+  { nama: 'rocket', pustaka: 'FontAwesome', warna: '#ff4757' },
+  { nama: 'planet', pustaka: 'Ionicons', warna: '#ffa502' },
+  { nama: 'space-station', pustaka: 'MaterialCommunityIcons', warna: '#747d8c' },
+  { nama: 'git-branch', pustaka: 'Feather', warna: '#2ed573' },
+  { nama: 'codesquare', pustaka: 'AntDesign', warna: '#1e90ff' },
+  { nama: 'heart', pustaka: 'FontAwesome', warna: '#ff6b81' },
+  { nama: 'game-controller', pustaka: 'Ionicons', warna: '#5352ed' },
+  { nama: 'coffee', pustaka: 'Feather', warna: '#834d18' },
+  { nama: 'android', pustaka: 'MaterialCommunityIcons', warna: '#a0d243' },
+  { nama: 'apple1', pustaka: 'AntDesign', warna: '#ced6e0' },
+];
 
-  const sebelum = sorted.filter(m => m.stambuk < stambukTarget).slice(-5);
-  const sesudah = sorted.filter(m => m.stambuk > stambukTarget).slice(0, 5);
+/**
+ * Komponen untuk menampilkan satu kartu ikon.
+ * @param {KartuIkonProps} props - Properti yang berisi detail ikon.
+ */
+const KartuIkon = ({ ikon }: KartuIkonProps) => {
+  // Ambil komponen ikon yang sesuai dari objek ICON_LIBRARIES
+  const IkonKomponen = ICON_LIBRARIES[ikon.pustaka];
 
   return (
-    <SafeAreaView style={gaya.latarBelakang}>
-      <ScrollView contentContainerStyle={gaya.konten}>
-        <Text style={[gaya.judulHalaman, { fontFamily: 'BungeeShade-Regular' }]}>
-          Final Showcase - Nurmisba
-        </Text>
-        <Text style={gaya.subjudulHalaman}>Stambuk: {stambukTarget}</Text>
+    <View style={gaya.wadahKartu}>
+      {/* Properti 'name' diberi cast 'as any' karena setiap pustaka ikon memiliki daftar namanya sendiri yang spesifik.
+        Membuat tipe yang sangat ketat untuk ini akan sangat rumit.
+        Cast ini adalah solusi praktis yang memberi tahu TypeScript untuk mempercayai bahwa nama yang kita berikan sudah benar.
+      */}
+      <IkonKomponen name={ikon.nama as any} size={48} color={ikon.warna} />
+      <Text style={gaya.teksNamaIkon}>{ikon.nama}</Text>
+      <Text style={gaya.teksPustakaIkon}>{ikon.pustaka}</Text>
+    </View>
+  );
+};
 
-        <View style={gaya.pemisah} />
-        <Text style={gaya.keterangan}>
-          👇 Berikut adalah 10 nama mahasiswa **sebelum** stambuk:
-        </Text>
-
-        {sebelum.map((mhs, index) => (
-          <Text
-            key={`sebelum-${index}`}
-            style={[
-              gaya.item,
-              {
-                fontFamily: mhs.font,
-                ...(mhs.weight ? { fontWeight: mhs.weight as '100' | '200' | '300' | '400' | '500' | '600' | '700' | '800' | '900' } : {}),
-              },
-            ]}
-          >
-            {mhs.nama}{'\n'}({mhs.stambuk})
-          </Text>
-        ))}
-
-        <View style={gaya.pemisah} />
-        <Text style={gaya.keterangan}>
-          👇 Berikut adalah 10 nama mahasiswa **setelah** stambuk:
-        </Text>
-
-        {sesudah.map((mhs, index) => (
-          <Text
-            key={`sesudah-${index}`}
-            style={[
-              gaya.item,
-              {
-                fontFamily: mhs.font,
-                ...(mhs.weight ? { fontWeight: mhs.weight as '100' | '200' | '300' | '400' | '500' | '600' | '700' | '800' | '900' } : {}),
-              },
-            ]}
-          >
-            {mhs.nama}{'\n'}({mhs.stambuk})
-          </Text>
-        ))}
+/**
+ * Komponen utama layar yang menampilkan galeri ikon.
+ */
+export default function LayarGaleriIkon() {
+  return (
+    <SafeAreaView style={gaya.areaAman}>
+      <ScrollView>
+        <View style={gaya.wadahJudul}>
+          <Text style={gaya.teksJudul}>Galeri Ikon</Text>
+          <Text style={gaya.teksSubJudul}>Menampilkan 10 Ikon Berbeda</Text>
+        </View>
+        <View style={gaya.wadahKisi}>
+          {DAFTAR_IKON.map((ikon, indeks) => (
+            <KartuIkon key={indeks} ikon={ikon} />
+          ))}
+        </View>
       </ScrollView>
     </SafeAreaView>
   );
 }
 
 const gaya = StyleSheet.create({
-  latarBelakang: {
+  areaAman: {
     flex: 1,
-    backgroundColor: '#F5F7FA',
+    backgroundColor: '#121212', // Latar belakang gelap
   },
-  loading: {
-    flex: 1,
-    justifyContent: 'center',
+  wadahJudul: {
+    padding: 24,
     alignItems: 'center',
   },
-  konten: {
-    paddingHorizontal: 18,
-    paddingVertical: 28,
-  },
-  judulHalaman: {
-    fontSize: 30,
+  teksJudul: {
+    fontSize: 28,
     fontWeight: 'bold',
-    textAlign: 'center',
-    color: '#111',
-    marginBottom: 6,
+    color: '#FFFFFF',
   },
-  subjudulHalaman: {
-    fontSize: 14,
-    textAlign: 'center',
-    color: '#777',
-    marginBottom: 12,
+  teksSubJudul: {
+    fontSize: 16,
+    color: '#A9A9A9',
+    marginTop: 4,
   },
-  keterangan: {
-    fontSize: 15,
-    color: '#333',
-    marginBottom: 15,
-    textAlign: 'center',
-    fontStyle: 'italic',
+  wadahKisi: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    paddingHorizontal: 10,
   },
-  item: {
-    fontSize: 20,
-    color: '#000',
-    textAlign: 'center',
-    backgroundColor: '#FFFFFF',
-    marginBottom: 16,
-    padding: 12,
-    borderRadius: 6,
+  wadahKartu: {
+    backgroundColor: '#1E1E1E',
+    borderRadius: 16,
+    padding: 20,
+    margin: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '42%', // Sekitar 2 kolom dengan sedikit spasi
+    aspectRatio: 1, // Membuat kartu menjadi persegi
     borderWidth: 1,
-    borderColor: '#DDD',
-    lineHeight: 30,
+    borderColor: '#2D2D2D',
   },
-  pemisah: {
-    height: 1,
-    width: '85%',
-    backgroundColor: '#BBB',
-    alignSelf: 'center',
-    marginVertical: 22,
+  teksNamaIkon: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#EAEAEA',
+    marginTop: 12,
+  },
+  teksPustakaIkon: {
+    fontSize: 12,
+    color: '#888888',
+    marginTop: 4,
   },
 });
